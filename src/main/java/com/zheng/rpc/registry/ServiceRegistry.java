@@ -1,12 +1,13 @@
 package com.zheng.rpc.registry;
 
-import com.zheng.rpc.constants.ZkConstants;
-import org.apache.zookeeper.*;
-import org.apache.zookeeper.data.Stat;
+import com.zheng.rpc.common.constants.ZkConstants;
+import com.zheng.rpc.common.utils.ZkUtil;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
@@ -69,54 +70,6 @@ public class ServiceRegistry {
      * @param data
      */
     private void saveData(String data) {
-        createNode(data);
-    }
-
-    /**
-     * 判断zookeeper集群中指定节点是否存在
-     * @param nodePath
-     * @return
-     * @throws Exception
-     */
-    private boolean existNode(String nodePath) throws Exception {
-        Stat stat = zk.exists(nodePath, false);
-        return Optional.ofNullable(stat).isPresent();
-    }
-
-    /**
-     * 创建服务器注册的父级节点
-     * 父级节点是持久化类型的
-     * 如果没有创建父级节点而直接创建子节点，zookeeper将报错
-     */
-    private void createNode(String data) {
-        // 创建节点前先成功创建父节点
-        createParentNode();
-        // 创建子节点
-        String childNode = new StringBuilder(ZkConstants.PARENT_NODE)
-                .append(ZkConstants.DATA_NODE).toString();
-        try {
-            if (!existNode(childNode)) {
-                zk.create(childNode, data.getBytes(StandardCharsets.UTF_8), ZooDefs.Ids.OPEN_ACL_UNSAFE,
-                        CreateMode.EPHEMERAL_SEQUENTIAL);
-            }
-        } catch (Exception e) {
-            logger.error("创建节点{}发生异常，异常信息: {}", childNode, e.getLocalizedMessage());
-        }
-    }
-
-    /**
-     * 创建父节点
-     * @throws Exception
-     */
-    private void createParentNode() {
-        String node = ZkConstants.PARENT_NODE;
-        try {
-            if (!existNode(node)) {
-                zk.create(node, "root".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE,
-                        CreateMode.PERSISTENT);
-            }
-        } catch (Exception e) {
-            logger.error("创建节点{}发生异常，异常信息: {}", node, e.getLocalizedMessage());
-        }
+        ZkUtil.createNode(zk, data);
     }
 }
