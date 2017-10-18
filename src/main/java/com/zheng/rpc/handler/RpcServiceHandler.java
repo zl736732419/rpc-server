@@ -27,10 +27,11 @@ public class RpcServiceHandler extends SimpleChannelInboundHandler<RpcRequest> {
         response.setRequestId(request.getRequestId());
         try {
             Object result = handleRequest(request);
-            ctx.writeAndFlush(result);
+            response.setResult(result);
         } catch (Exception e) {
             response.setError(e);
         }
+        ctx.writeAndFlush(response);
     }
 
     /**
