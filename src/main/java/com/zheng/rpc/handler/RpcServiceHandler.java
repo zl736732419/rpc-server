@@ -51,6 +51,9 @@ public class RpcServiceHandler extends SimpleChannelInboundHandler<RpcRequest> {
                     .append(className.substring(1)).toString();
         }
         Object targetService = serviceMap.get(className);
+        if (!Optional.ofNullable(targetService).isPresent()) {
+            throw new RuntimeException("没有找到指定的服务: " + className);
+        }
         Class<?> targetClass = targetService.getClass();
         Method method = targetClass.getMethod(request.getMethodName(), request.getParameterTypes());
         Object result = method.invoke(targetService, request.getParameters());
